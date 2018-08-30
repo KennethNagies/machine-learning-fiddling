@@ -24,18 +24,18 @@ class MNIST_Image:
 				self.imageVector[i] = 1
 		self.maxValue = 1
 
-	# Returns an array of training ImageData objects
+	# Returns an array of training MNIST_Image objects
 	def getTrainingData():
 		print("Reading Training Images:")
 		return MNIST_Image.readDataFile(MNIST_Image.TRAIN_IMAGE_PATH, MNIST_Image.TRAIN_LABEL_PATH)
 
-	# Returns an array of testing ImageData objects
+	# Returns an array of testing MNIST_Image objects
 	def getTestingData():
 		print("Reading Testing Images:")
 		return MNIST_Image.readDataFile(MNIST_Image.TEST_IMAGE_PATH, MNIST_Image.TEST_LABEL_PATH)
 
 	# Reads the Image and label files at the paths given and returns an array of the resulting
-	# ImageData Objects
+	# MNIST_Image Objects
 	def readDataFile(imageFileName, labelFileName):
 		images = []
 		imageFile = open(imageFileName, "rb")
@@ -66,11 +66,15 @@ class MNIST_Image:
 	# Prints an image to the Console with '#'s for non zeroes and ' 's for zeroes along with the label.
 	def printImage(image):
 		print(image.label)
+		print('-' * (image.width + 2))
 		for row in range(image.height):
-			rowArr = [""] * image.width
+			rowArr = [""] * (image.width + 2)
+			rowArr[0] = "|"
+			rowArr[-1] = "|"
 			for col in range(image.width):
 				if image.imageVector[row * image.width + col] == 0:
-					rowArr[col] = " "
+					rowArr[col + 1] = " "
 				else:
-					rowArr[col] = "#"
+					rowArr[col + 1] = "#"
 			print(''.join(rowArr))
+		print('-' * (image.width + 2))
