@@ -1,5 +1,6 @@
 import sys
-sys.path.append('../../MNIST')
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../MNIST"))
 from MNIST import MNIST_Image
 from SLP import SLP
 
