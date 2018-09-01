@@ -11,7 +11,7 @@ def main():
 		image.simplify()
 	for image in testingImages:
 		image.simplify()
-	slp = SLP(10, 28*28, 0.05)
+	slp = SLP(10, 28*28, 0.07)
 	slp.train(trainingImages)
 	slp.test(testingImages)
 

@@ -47,16 +47,19 @@ class MNIST_Image:
 			imageCount = int.from_bytes(imageFile.read(4), byteorder='big')
 			rows = int.from_bytes(imageFile.read(4), byteorder='big')
 			cols = int.from_bytes(imageFile.read(4), byteorder='big')
-			for imageIndex in range(imageCount):
-				readImage = imageFile.read(rows * cols)
-				tempImage = [0] * (rows * cols)
+			for chunkIndex in range(int(imageCount/100)):
+				readChunk = imageFile.read(rows * cols * 100)
 				byteIndex = 0
-				for byte in readImage:
+				tempImage = None
+				for byte in readChunk:
+					if byteIndex == 0:
+						tempImage = [0] * (rows * cols)
 					tempImage[byteIndex] = byte
-					byteIndex += 1
-				label = int.from_bytes(labelFile.read(1), byteorder='big')
-				images.append(MNIST_Image(cols, rows, tempImage, label))
-				print(str(imageIndex + 1) + "/" + str(imageCount) + "\r", end="")
+					byteIndex = (byteIndex + 1) % (rows * cols)
+					if byteIndex == 0:
+						label = int.from_bytes(labelFile.read(1), byteorder='big')
+						images.append(MNIST_Image(cols, rows, tempImage, label))
+				print(str((chunkIndex + 1) * 100) + "/" + str(imageCount) + "\r", end="")
 			print(str(imageCount) + "/" + str(imageCount))
 		finally:
 			imageFile.close()
