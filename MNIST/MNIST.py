@@ -1,4 +1,5 @@
 import os
+import pandas
 
 class MNIST_Image:
 	TEST_IMAGE_PATH = os.path.join(os.path.dirname(__file__), "./TestingImages")
