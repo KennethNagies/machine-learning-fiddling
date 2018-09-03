@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <inttypes.h>
 #include "./MNIST.h"
 
@@ -66,11 +67,17 @@ MNIST_Image* GetImages(char* imageFileName, char* labelFileName)
 	// Get the number of rows in an image.
 	uint32_t rows;
 	fread(&rows, 4, 1, imageFilePointer);
-	rows = EndianConvert(rows);
 	// Get the number of columns in an image.
 	uint32_t cols;
 	fread(&cols, 4, 1, imageFilePointer);
-	cols = EndianConvert(cols);
+	uint32_t endianCheck = 0x000000ff;
+	char* eChar = ((char*)&endianCheck);
+	bool isBigEndian = eChar == 0x00;
+	if (!isBigEndian)
+	{
+		rows = EndianConvert(rows);
+		cols = EndianConvert(cols);
+	}
 	// Allocate memory for the image and label buffers.
 	uint8_t* imageBuffer = malloc(rows * cols * imageCount * sizeof(uint8_t));
 	uint8_t* labelBuffer = malloc(imageCount * sizeof(uint8_t));
