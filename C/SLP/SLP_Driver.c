@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include "../../MNIST/MNIST.h"
+#include "./SLP.h"
 
 int main(int argc, const char* argv)
 {
@@ -13,15 +14,17 @@ int main(int argc, const char* argv)
 		SimplifyImage(&(*(trainingImages + imageIndex)));
 		printf("%d/%d\r", imageIndex + 1, 60000);
 	}
-	printf("\n");
+	printf("\nSimplifying Testing Images:\n");
 	for (uint32_t imageIndex = 0; imageIndex < 10000; ++imageIndex)
 	{
 		SimplifyImage(&(*(testingImages + imageIndex)));
 		printf("%d/%d\r", imageIndex + 1, 10000);
 	}
 	printf("\n");
-	printImage(*trainingImages);
-	printImage(*testingImages);
+	SLP slp = InitSLP(10, 0.07);
+	Train(&slp, trainingImages, 60000);
+	Test(&slp, testingImages, 10000);
+	FreeSLP(slp);
 	FreeImages(trainingImages, 60000);
 	FreeImages(testingImages, 10000);
 }
