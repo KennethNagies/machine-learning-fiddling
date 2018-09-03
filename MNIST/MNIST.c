@@ -72,7 +72,7 @@ MNIST_Image* GetImages(char* imageFileName, char* labelFileName)
 	fread(&cols, 4, 1, imageFilePointer);
 	uint32_t endianCheck = 0x000000ff;
 	char* eChar = ((char*)&endianCheck);
-	bool isBigEndian = eChar == 0x00;
+	bool isBigEndian = *eChar == 0x00;
 	if (!isBigEndian)
 	{
 		rows = EndianConvert(rows);

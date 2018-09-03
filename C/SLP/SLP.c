@@ -133,7 +133,7 @@ void Test(SLP* slp, MNIST_Image* testingImages, uint32_t imageCount)
 		{
 			correct++;
 		}
-		printf("Testing: %d/%d    Correct: %.2f%%\r", imageIndex + 1, imageCount, ((float)(correct))/((float)(imageIndex + 1)) * 100);
+		printf("Testing:  %d/%d    Correct: %.2f%%\r", imageIndex + 1, imageCount, ((float)(correct))/((float)(imageIndex + 1)) * 100);
 	}
 	printf("\n");
 }
