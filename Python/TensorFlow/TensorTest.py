@@ -22,7 +22,6 @@ def main():
 	testingImages = MNIST_Image.getTestingData()
 	testingDataFrame = dataFrameFromImages(testingImages)
 	print(testingDataFrame.head())
-	print(testingImages[1].imageVector[93 : 102])
 
 if __name__=="__main__":
 	main()
