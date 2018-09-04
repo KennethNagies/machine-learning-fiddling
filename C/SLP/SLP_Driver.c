@@ -4,6 +4,10 @@
 #include "../../MNIST/MNIST.h"
 #include "./SLP.h"
 
+/**
+ * The driver for a Single Layer Perceptron that attempts to classify digit images.
+ *
+ */
 int main(int argc, const char* argv)
 {
 	MNIST_Image* trainingImages = GetTrainingImages();
