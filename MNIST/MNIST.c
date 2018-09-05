@@ -8,19 +8,27 @@
  * Initialize an MNIST_Image with the given image and label.
  * @param imageVector: The image vector to clone into the MNIST_Image.
  * @param label: The label for the MNIST_Image.
- * @param length: The length of the MNIST_Image image vector.
+ * @param width: The width of the image.
+ * @param height: The height of the image.
  * @return: The initialized MNIST_Image.
  */
-MNIST_Image InitImage(uint8_t* imageVector, uint8_t label, uint32_t length)
+MNIST_Image InitImage(uint8_t* imageVector, uint8_t label, uint32_t width, uint32_t height)
 {
 	MNIST_Image newImage;
-	newImage.imageVector = malloc(length * sizeof(uint8_t));
-	for (uint32_t byteIndex = 0; byteIndex < length; ++byteIndex)
+	newImage.image = malloc(height * sizeof(uint32_t*));
+	uint32_t byteIndex = 0;
+	for (uint32_t rowIndex = 0; rowIndex < height; ++rowIndex)
 	{
-		*(newImage.imageVector + byteIndex) = *(imageVector + byteIndex);
+		*(newImage.image + rowIndex) = malloc(width * sizeof(uint8_t));
+		for (uint32_t colIndex = 0; colIndex < width; ++colIndex)
+		{
+			*(*(newImage.image + rowIndex) + colIndex) = *(imageVector + byteIndex);
+			byteIndex++;
+		}
 	}
 	newImage.label = label;
-	newImage.length = length;
+	newImage.width = width;
+	newImage.height = height;
 	return newImage;
 }
 
@@ -30,11 +38,14 @@ MNIST_Image InitImage(uint8_t* imageVector, uint8_t label, uint32_t length)
  */
 void SimplifyImage(MNIST_Image* imagePtr)
 {
-	for (uint32_t byteIndex = 0; byteIndex < imagePtr->length; ++byteIndex)
+	for (uint32_t rowIndex = 0; rowIndex < imagePtr->height; ++rowIndex)
 	{
-		if (*(imagePtr->imageVector + byteIndex) > 0)
+		for (uint32_t colIndex = 0; colIndex < imagePtr->width; ++colIndex)
 		{
-			*(imagePtr->imageVector + byteIndex) = 1;
+			if (*(*(imagePtr->image + rowIndex) + colIndex) > 0)
+			{
+				*(*(imagePtr->image + rowIndex) + colIndex) = 1;
+			}
 		}
 	}
 }
@@ -45,7 +56,11 @@ void SimplifyImage(MNIST_Image* imagePtr)
  */
 void FreeImage(MNIST_Image image)
 {
-	free(image.imageVector);
+	for (uint32_t rowIndex = 0; rowIndex < image.height; ++rowIndex)
+	{
+		free(*(image.image + rowIndex));
+	}
+	free(image.image);
 }
 
 /*
@@ -133,7 +148,7 @@ MNIST_Image* GetImages(char* imageFileName, char* labelFileName)
 		{
 			*(tempImageVector + byteIndex) = *(imageBuffer + (imageIndex * (rows * cols)) + byteIndex);
 		}
-		*(images + imageIndex) = InitImage(tempImageVector, *(labelBuffer + imageIndex), rows * cols);
+		*(images + imageIndex) = InitImage(tempImageVector, *(labelBuffer + imageIndex), rows, cols);
 		printf("%d/%d\r", imageIndex + 1, imageCount);
 	}
 	printf("\n");
@@ -171,20 +186,20 @@ MNIST_Image* GetTestingImages()
 void printImage(MNIST_Image image)
 {
 	printf("%d\n", image.label);
-	char* rowString = malloc(31 * sizeof(char));
-	*(rowString + 30) = '\0';
-	for (uint8_t i = 0; i < 30; ++i)
+	char* rowString = malloc((image.width + 3) * sizeof(char));
+	*(rowString + (image.width + 2)) = '\0';
+	for (uint8_t i = 0; i < image.width + 2; ++i)
 	{
 		*(rowString + i) = '-';
 	}
 	printf("%s\n", rowString);
 	*(rowString) = '|';
-	*(rowString + 29) = '|';
-	for (uint32_t rowIndex = 0; rowIndex < 28; ++rowIndex)
+	*(rowString + image.width + 1) = '|';
+	for (uint32_t rowIndex = 0; rowIndex < image.height; ++rowIndex)
 	{
-		for (uint32_t colIndex = 0; colIndex < 28; ++ colIndex)
+		for (uint32_t colIndex = 0; colIndex < image.width; ++colIndex)
 		{
-			if (*(image.imageVector + (rowIndex * 28) + colIndex) == 0)
+			if (*(*(image.image + rowIndex) + colIndex) == 0)
 			{
 				*(rowString + colIndex + 1) = ' ';
 			}
@@ -195,7 +210,7 @@ void printImage(MNIST_Image image)
 		}
 		printf("%s\n", rowString);
 	}
-	for (uint8_t i = 0; i < 30; ++i)
+	for (uint8_t i = 0; i < image.width + 2; ++i)
 	{
 		*(rowString + i) = '-';
 	}

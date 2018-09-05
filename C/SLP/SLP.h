@@ -7,8 +7,9 @@
 typedef struct _SLP_Node
 {
 	float output;
-	uint32_t length;
-	float* weights;
+	uint32_t width;
+	uint32_t height;
+	float** weights;
 } SLP_Node;
 
 typedef struct _SLP

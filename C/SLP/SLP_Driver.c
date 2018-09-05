@@ -24,6 +24,8 @@ int main(int argc, const char* argv)
 		SimplifyImage(&(*(testingImages + imageIndex)));
 		printf("%d/%d\r", imageIndex + 1, 10000);
 	}
+	printImage(*(trainingImages));
+	printImage(*(testingImages));
 	printf("\n");
 	SLP slp = InitSLP(10, 0.07);
 	Train(&slp, trainingImages, 60000);

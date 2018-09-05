@@ -5,20 +5,24 @@
 
 /*
  * Initialize an SLP_Node with the given length.
- * @param length: The length of the input and weight vectors.
+ * @param width: The width of the input and weight vectors.
+ * @param height: The height of the input and weight vectors.
  * @return: The initialized SLP_Node.
  */
-SLP_Node InitNode(uint32_t length)
+SLP_Node InitNode(uint32_t width, uint32_t height)
 {
 	SLP_Node node;
 	node.output = 0.0;
-	node.length = length;
-	node.weights = malloc(length * sizeof(float));
-
-	// Initialize all of the weights to be a random number between 0 and 1.
-	for (uint32_t weightIndex = 0; weightIndex < length; ++weightIndex)
+	node.width = width;
+	node.height = height;
+	node.weights = malloc(height * sizeof(float*));
+	for (uint32_t rowIndex = 0; rowIndex < height; ++rowIndex)
 	{
-		*(node.weights + weightIndex) = ((float)rand()) / ((float)RAND_MAX);
+		*(node.weights + rowIndex) = malloc(width * sizeof(float));
+		for (uint32_t colIndex = 0; colIndex < width; ++colIndex)
+		{
+			*(*(node.weights + rowIndex) + colIndex) = ((float)rand()) / ((float)RAND_MAX);
+		}
 	}
 	return node;
 }
@@ -26,14 +30,19 @@ SLP_Node InitNode(uint32_t length)
 /*
  * Calculate the output for the given node.
  * @param node: A pointer to the node to calculate output for.
- * @param inputVector: The vector to calculate the output based on.
+ * @param inputImage: The image to calculate the output based on.
  */
-void GetOutput(SLP_Node* node, uint8_t* inputVector)
+void GetOutput(SLP_Node* node, MNIST_Image* inputImage)
 {
 	node->output = 0.0;
-	for (uint32_t byteIndex = 0; byteIndex < node->length; ++byteIndex)
+	for (uint32_t rowIndex = 0; rowIndex < node->height; ++rowIndex)
 	{
-		node->output += ((float)(*(inputVector + byteIndex))) * ((float)(*(node->weights + byteIndex)));
+		float* weightRow = *(node->weights + rowIndex);
+		uint8_t* imageRow = *(inputImage->image + rowIndex);
+		for (uint32_t colIndex = 0; colIndex < node->width; ++colIndex)
+		{
+			node->output += ((float)(*(imageRow + colIndex))) * ((float)(*(weightRow + colIndex)));
+		}
 	}
 	node->output /= ((float)(28*28));
 }
@@ -41,15 +50,20 @@ void GetOutput(SLP_Node* node, uint8_t* inputVector)
 /*
  * Adjust the weights of the given node based on the input and a given error and learning rate.
  * @param node: A pointer to the node.
- * @param inputVector: The input vector to calculate based on.
+ * @param inputImage: The input image to calculate based on.
  * @param error: The calculated error. (excpected - actual)
  * @param learningRate: The learning rate for the node.
  */
-void AdjustWeights(SLP_Node* node, uint8_t* inputVector, float error, float learningRate)
+void AdjustWeights(SLP_Node* node, MNIST_Image* inputImage, float error, float learningRate)
 {
-	for (uint32_t weightIndex = 0; weightIndex < node->length; ++weightIndex)
+	for (uint32_t rowIndex = 0; rowIndex < node->height; ++rowIndex)
 	{
-		*(node->weights + weightIndex) += learningRate * error * ((float)(*(inputVector + weightIndex)));
+		float* weightRow = *(node->weights + rowIndex);
+		uint8_t* imageRow = *(inputImage->image + rowIndex);
+		for (uint32_t colIndex = 0; colIndex < node->width; ++colIndex)
+		{
+			*(weightRow + colIndex) += learningRate * error * ((float)(*(imageRow + colIndex)));
+		}
 	}
 }
 
@@ -59,6 +73,10 @@ void AdjustWeights(SLP_Node* node, uint8_t* inputVector, float error, float lear
  */
 void FreeNode(SLP_Node node)
 {
+	for (uint32_t rowIndex = 0; rowIndex < node.height; ++rowIndex)
+	{
+		free(*(node.weights + rowIndex));
+	}
 	free(node.weights);
 }
 
@@ -90,7 +108,7 @@ SLP InitSLP(uint32_t size, float learningRate)
 	slp.layer = malloc(size * sizeof(SLP_Node));
 	for (uint32_t nodeIndex = 0; nodeIndex < size; ++nodeIndex)
 	{
-		*(slp.layer + nodeIndex) = InitNode(28*28);
+		*(slp.layer + nodeIndex) = InitNode(28, 28);
 	}
 	return slp;
 }
@@ -147,9 +165,9 @@ void Train(SLP* slp, MNIST_Image* trainingImages, uint32_t imageCount)
 		for (uint32_t nodeIndex = 0; nodeIndex < slp->size; ++nodeIndex)
 		{
 			SLP_Node* node = &(*(slp->layer + nodeIndex));
-			GetOutput(node, image.imageVector);
+			GetOutput(node, &image);
 			float error = ((float)(*(expectedOuts + nodeIndex))) - ((float)(node->output));
-			AdjustWeights(node, image.imageVector, error, slp->learningRate);
+			AdjustWeights(node, &image, error, slp->learningRate);
 		}
 		*(expectedOuts + image.label) = 0;
 		if (GetGuess(slp) == image.label)
@@ -177,7 +195,7 @@ void Test(SLP* slp, MNIST_Image* testingImages, uint32_t imageCount)
 		for (uint32_t nodeIndex = 0; nodeIndex < slp->size; ++nodeIndex)
 		{
 			SLP_Node* node = &(*(slp->layer + nodeIndex));
-			GetOutput(node, image.imageVector);
+			GetOutput(node, &image);
 		}
 		if (GetGuess(slp) == image.label)
 		{

@@ -5,12 +5,13 @@
 
 typedef struct __MNIST_Image
 {
-	uint8_t* imageVector;
-	uint32_t length;
+	uint8_t** image;
+	uint32_t width;
+	uint32_t height;
 	uint8_t label;
 } MNIST_Image;
 
-MNIST_Image InitImage(uint8_t* imageVector, uint8_t label, uint32_t length);
+MNIST_Image InitImage(uint8_t* imageVector, uint8_t label, uint32_t width, uint32_t height);
 
 void SimplifyImage(MNIST_Image* imagePtr);
 
