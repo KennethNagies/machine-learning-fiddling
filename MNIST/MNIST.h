@@ -1,26 +1,29 @@
 #ifndef MNIST_H
 #define MNIST_H
+#include <vector>
+#include <string>
 
-#include <inttypes.h>
-
-typedef struct __MNIST_Image
+class MNIST_Image
 {
-	uint8_t** image;
-	uint32_t width;
-	uint32_t height;
-	uint8_t label;
-} MNIST_Image;
+	public:
+		MNIST_Image(unsigned char* imageArray, unsigned char label, unsigned width, unsigned height);
+		// Reduces the image to contain only ones and zeroes.
+		void simplify();
+		void printImage();
+		std::vector<unsigned char> getImageVector();
+		std::vector<std::vector<unsigned char> > getImage2D();
+		unsigned getWidth();
+		unsigned getHeight();
+		unsigned char getLabel();
+		static std::vector<MNIST_Image> getTrainingImages();
+		static std::vector<MNIST_Image> getTestingImages();
 
-MNIST_Image InitImage(uint8_t* imageVector, uint8_t label, uint32_t width, uint32_t height);
-
-void SimplifyImage(MNIST_Image* imagePtr);
-
-void FreeImages(MNIST_Image* images, uint32_t length);
-
-MNIST_Image* GetTrainingImages();
-
-MNIST_Image* GetTestingImages();
-
-void printImage(MNIST_Image image);
-
+	private:
+		std::vector<unsigned char> imageVector;
+		unsigned width;
+		unsigned height;
+		unsigned char label;
+		static unsigned EndianConvert(unsigned input);
+		static std::vector<MNIST_Image> GetImages(std::string imageFileName, std::string labelFileName);
+};
 #endif

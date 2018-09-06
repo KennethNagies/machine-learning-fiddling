@@ -1,2 +1,2 @@
-C_SLP:
-	gcc -o C_SLP.exe ./C/SLP/SLP_Driver.c ./C/SLP/SLP.c ./MNIST/MNIST.c
+C++_SLP:
+	g++ -std=c++11 -o C++_SLP.exe ./MNIST/MNIST.cpp ./C++/SLP/SLP_Driver.cpp ./C++/SLP/SLP.cpp
